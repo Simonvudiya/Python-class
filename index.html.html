@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Foundations — Conditions, Functions, Loops & Modules</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Literata:ital,opsz,wght@0,18..36,400;0,18..36,500;0,18..36,600;1,18..36,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F3F4EF;
+    --paper-2:#EAEBE3;
+    --ink:#1C2320;
+    --ink-soft:#4B5450;
+    --code-bg:#1B2430;
+    --code-bg-2:#141B25;
+    --code-ink:#E7ECEF;
+    --code-muted:#8592A6;
+    --amber:#E2A63B;
+    --amber-deep:#B87F1F;
+    --teal:#2E6E62;
+    --teal-deep:#1F4C43;
+    --rose:#C1554A;
+    --rule:#D7D9CF;
+    --cond:#C1554A;
+    --func:#B87F1F;
+    --loop:#2E6E62;
+    --mod:#3D5A80;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Literata', Georgia, serif;
+    line-height:1.65;
+    font-size:17px;
+  }
+  h1,h2,h3,h4,.mono-label,nav,.btn,.pill{font-family:'Space Grotesk', sans-serif;}
+  code, pre, .code-font{font-family:'JetBrains Mono', monospace;}
+
+  a{color:var(--teal-deep);}
+
+  /* ---------- Layout shell ---------- */
+  .shell{
+    display:grid;
+    grid-template-columns: 280px minmax(0,1fr) 260px;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "sidebar hero   hero"
+      "sidebar main   rail";
+    max-width:1440px;
+    margin:0 auto;
+  }
+  #sidebar{ grid-area: sidebar; }
+  .hero{ grid-area: hero; }
+  main{ grid-area: main; }
+  #rail{ grid-area: rail; }
+
+  @media (max-width: 1180px){
+    .shell{
+      grid-template-columns: 280px minmax(0,1fr);
+      grid-template-areas:
+        "sidebar hero"
+        "sidebar main";
+    }
+    #rail{display:none;}
+  }
+  @media (max-width: 920px){
+    .shell{
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "hero"
+        "sidebar"
+        "main";
+    }
+    #sidebar{position:relative; height:auto; top:0;}
+    #topbar{display:flex;}
+  }
+
+  /* ---------- Top hero ---------- */
+  .hero{
+    padding:56px 40px 40px;
+    background:
+      radial-gradient(1100px 320px at 85% -10%, rgba(226,166,59,0.16), transparent 60%),
+      var(--paper);
+    border-bottom:1px solid var(--rule);
+  }
+  .hero .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:12.5px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--ink-soft); font-weight:600; margin-bottom:14px;
+  }
+  .hero .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);}
+  .hero h1{
+    font-size:clamp(30px, 4.2vw, 46px);
+    line-height:1.08; margin:0 0 14px; letter-spacing:-0.01em; font-weight:700;
+  }
+  .hero p.sub{
+    max-width:640px; color:var(--ink-soft); font-size:18px; margin:0 0 26px;
+  }
+  .flow-preview{
+    display:flex; flex-wrap:wrap; gap:0; align-items:center; margin-top:10px;
+  }
+  .flow-step{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 16px; border-radius:999px; border:1px solid var(--rule);
+    background:#fff; font-size:14px; font-weight:600; color:var(--ink);
+  }
+  .flow-step .sw{width:10px;height:10px;border-radius:50%;}
+  .flow-arrow{padding:0 10px; color:var(--ink-soft); font-size:18px;}
+
+  /* ---------- Top bar (mobile) ---------- */
+  #topbar{
+    display:none; grid-column:1/-1; position:sticky; top:0; z-index:30;
+    background:var(--paper); border-bottom:1px solid var(--rule);
+    padding:12px 16px; justify-content:space-between; align-items:center;
+  }
+  #topbar strong{font-family:'Space Grotesk';}
+  #navToggle{
+    border:1px solid var(--rule); background:#fff; border-radius:8px; padding:8px 12px;
+    font-family:'Space Grotesk'; font-weight:600; cursor:pointer;
+  }
+
+  /* ---------- Sidebar ---------- */
+  #sidebar{
+    align-self:start; position:sticky; top:0; height:100vh; overflow-y:auto;
+    padding:26px 18px 60px 32px; border-right:1px solid var(--rule);
+    scrollbar-width:thin;
+  }
+  #sidebar.open{display:block;}
+  .brand{
+    display:flex; align-items:center; gap:10px; margin-bottom:22px;
+    font-weight:700; font-size:15px;
+  }
+  .brand .mark{
+    width:26px;height:26px;border-radius:7px;
+    background:linear-gradient(135deg, var(--amber), var(--teal));
+    flex-shrink:0;
+  }
+  .progress-wrap{margin-bottom:22px;}
+  .progress-track{
+    height:6px; border-radius:99px; background:var(--paper-2); overflow:hidden;
+  }
+  .progress-fill{
+    height:100%; width:0%; background:linear-gradient(90deg, var(--amber), var(--teal));
+    transition:width .25s ease;
+  }
+  .progress-label{font-size:12px; color:var(--ink-soft); margin-top:6px;}
+
+  .navgroup{margin-bottom:6px;}
+  .navgroup-head{
+    display:flex; align-items:center; gap:9px;
+    font-size:12.5px; text-transform:uppercase; letter-spacing:0.09em;
+    font-weight:700; color:var(--ink-soft); margin:20px 0 8px;
+  }
+  .navgroup-head .sw{width:9px;height:9px;border-radius:3px;}
+  #sidebar ul{list-style:none; margin:0 0 4px; padding:0 0 0 18px; border-left:2px solid var(--rule);}
+  #sidebar li{margin:2px 0;}
+  #sidebar a{
+    display:block; text-decoration:none; color:var(--ink-soft);
+    font-size:14.5px; padding:6px 10px; border-radius:8px;
+    transition:background .15s, color .15s;
+  }
+  #sidebar a:hover{background:var(--paper-2); color:var(--ink);}
+  #sidebar a.active{
+    background:#fff; color:var(--ink); font-weight:600;
+    box-shadow: inset 3px 0 0 var(--amber);
+  }
+
+  /* ---------- Main content ---------- */
+  main{padding:44px 40px 120px; max-width:760px; margin:0 auto; width:100%;}
+  @media (max-width:600px){ main{padding:28px 18px 90px;} .hero{padding:36px 18px 28px;} }
+
+  /* ---------- Right rail ---------- */
+  #rail{
+    align-self:start; position:sticky; top:0; height:100vh; overflow-y:auto;
+    padding:26px 28px 60px 20px; border-left:1px solid var(--rule);
+    scrollbar-width:thin;
+  }
+  .rail-card{
+    background:#fff; border:1px solid var(--rule); border-radius:12px;
+    padding:16px 16px 14px; margin-bottom:18px;
+  }
+  .rail-title{
+    font-family:'Space Grotesk'; font-size:11.5px; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); margin-bottom:12px;
+  }
+  .rail-stats{display:grid; gap:9px;}
+  .rail-stat{display:flex; align-items:baseline; justify-content:space-between; font-size:13.5px;}
+  .rail-stat b{font-family:'Space Grotesk'; font-size:16px; color:var(--ink);}
+  .rail-legend{display:grid; gap:9px;}
+  .rail-legend-item{display:flex; align-items:center; gap:9px; font-size:13.5px; color:var(--ink-soft);}
+  .rail-legend-item .sw{width:9px;height:9px;border-radius:50%; flex-shrink:0;}
+  .rail-jump{display:grid; gap:6px;}
+  .rail-jump a{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    text-decoration:none; color:var(--ink); font-size:13.5px; font-weight:500;
+    padding:8px 10px; border-radius:8px; background:var(--paper-2);
+    transition:background .15s;
+  }
+  .rail-jump a:hover{background:#eee7d6;}
+  .rail-jump a .arrow{color:var(--ink-soft); font-size:13px;}
+  #backToTop{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    width:100%; padding:11px; border-radius:9px; border:1px solid var(--rule);
+    background:#fff; font-family:'Space Grotesk'; font-weight:600; font-size:13.5px;
+    color:var(--ink); cursor:pointer; transition:all .15s;
+  }
+  #backToTop:hover{border-color:var(--amber-deep); color:var(--amber-deep);}
+
+  section.topic{margin-bottom:64px; scroll-margin-top:20px;}
+  .stage-tag{
+    display:inline-flex; align-items:center; gap:7px;
+    font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    padding:5px 11px; border-radius:999px; margin-bottom:14px;
+  }
+  .stage-tag .sw{width:7px;height:7px;border-radius:50%;}
+  .stage-cond{background:rgba(193,85,74,0.12); color:var(--cond);}
+  .stage-func{background:rgba(184,127,31,0.14); color:var(--func);}
+  .stage-loop{background:rgba(46,110,98,0.13); color:var(--loop);}
+  .stage-mod{background:rgba(61,90,128,0.13); color:var(--mod);}
+
+  h2.topic-title{
+    font-size:26px; font-weight:700; margin:0 0 14px; letter-spacing:-0.01em;
+  }
+  h3{font-size:19px; font-weight:600; margin:30px 0 10px;}
+  p{margin:0 0 16px;}
+  .lede{color:var(--ink-soft); font-size:17px;}
+
+  /* Code blocks */
+  .code-block{
+    background:var(--code-bg); color:var(--code-ink); border-radius:var(--radius);
+    margin:18px 0 22px; overflow:hidden; box-shadow:0 8px 24px -14px rgba(0,0,0,0.4);
+  }
+  .code-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:9px 14px; background:var(--code-bg-2);
+    font-size:12px; color:var(--code-muted);
+  }
+  .code-dots{display:flex; gap:6px;}
+  .code-dots span{width:9px;height:9px;border-radius:50%; display:inline-block;}
+  .code-dots span:nth-child(1){background:#E2705B;}
+  .code-dots span:nth-child(2){background:#E9C15C;}
+  .code-dots span:nth-child(3){background:#63B784;}
+  .copy-btn{
+    background:transparent; border:1px solid #33404f; color:var(--code-muted);
+    font-family:'Space Grotesk'; font-size:11.5px; padding:4px 10px; border-radius:6px;
+    cursor:pointer; transition:all .15s;
+  }
+  .copy-btn:hover{border-color:var(--amber); color:var(--amber);}
+  .code-block pre{
+    margin:0; padding:16px 18px; overflow-x:auto; font-size:14.5px; line-height:1.6;
+  }
+  .code-block code{background:none; padding:0; color:inherit;}
+
+  code.inline{
+    background:var(--paper-2); border:1px solid var(--rule); border-radius:5px;
+    padding:1.5px 6px; font-size:0.88em; color:var(--teal-deep);
+  }
+
+  .out-block{
+    background:#fff; border:1px dashed var(--rule); border-radius:var(--radius);
+    padding:12px 16px; margin:0 0 22px; font-size:14px;
+  }
+  .out-block .out-label{
+    font-family:'Space Grotesk'; font-size:11px; text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--ink-soft); margin-bottom:6px; font-weight:700;
+  }
+  .out-block pre{margin:0; font-family:'JetBrains Mono'; font-size:14px; white-space:pre-wrap;}
+
+  /* Tables */
+  table{width:100%; border-collapse:collapse; margin:6px 0 24px; font-size:15px; background:#fff; border-radius:8px; overflow:hidden; border:1px solid var(--rule);}
+  th, td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--rule);}
+  th{background:var(--paper-2); font-family:'Space Grotesk'; font-weight:600; font-size:13.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-soft);}
+  tr:last-child td{border-bottom:none;}
+  td code.inline{white-space:nowrap;}
+
+  /* Callouts */
+  .callout{
+    border-radius:var(--radius); padding:16px 18px; margin:0 0 22px;
+    border-left:4px solid var(--amber-deep); background:rgba(226,166,59,0.09);
+  }
+  .callout.warn{border-left-color:var(--rose); background:rgba(193,85,74,0.08);}
+  .callout.tip{border-left-color:var(--teal); background:rgba(46,110,98,0.08);}
+  .callout-label{
+    font-family:'Space Grotesk'; font-weight:700; font-size:12.5px;
+    text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; display:block;
+  }
+  .callout p:last-child{margin-bottom:0;}
+
+  /* Exercises */
+  details.exercise{
+    border:1px solid var(--rule); border-radius:var(--radius); margin:0 0 14px; background:#fff;
+    overflow:hidden;
+  }
+  details.exercise summary{
+    padding:16px 18px; cursor:pointer; font-family:'Space Grotesk'; font-weight:600;
+    list-style:none; display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  details.exercise summary::-webkit-details-marker{display:none;}
+  details.exercise summary .chev{transition:transform .2s; color:var(--ink-soft); flex-shrink:0;}
+  details.exercise[open] summary .chev{transform:rotate(180deg);}
+  details.exercise .ex-body{padding:0 18px 18px;}
+  .ex-num{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:24px;height:24px;border-radius:6px; background:var(--paper-2);
+    font-size:12px; margin-right:10px; color:var(--ink-soft); font-weight:700;
+  }
+
+  /* Checklist */
+  .checklist{display:grid; gap:8px; margin:0 0 10px;}
+  .check-item{
+    display:flex; align-items:flex-start; gap:12px; background:#fff;
+    border:1px solid var(--rule); border-radius:9px; padding:11px 14px;
+    font-size:15px; cursor:pointer; transition:background .15s;
+  }
+  .check-item:hover{background:var(--paper-2);}
+  .check-item input{margin-top:3px; width:16px; height:16px; accent-color:var(--teal);}
+  .check-item.checked span.qtext{color:var(--ink-soft); text-decoration:line-through;}
+  #checklistProgress{
+    font-family:'Space Grotesk'; font-weight:700; font-size:14px; color:var(--teal-deep); margin-bottom:14px;
+  }
+
+  /* Mental model diagram */
+  .model{
+    display:flex; flex-direction:column; gap:0; margin:22px 0 10px; max-width:420px;
+  }
+  .model-node{
+    display:flex; align-items:center; gap:14px; padding:14px 16px;
+    background:#fff; border:1px solid var(--rule); border-radius:12px;
+  }
+  .model-node .num{
+    width:38px;height:38px;border-radius:10px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk'; font-weight:700; color:#fff; font-size:15px;
+  }
+  .model-node .txt strong{display:block; font-family:'Space Grotesk'; font-size:15.5px;}
+  .model-node .txt span{color:var(--ink-soft); font-size:13.5px;}
+  .model-connector{
+    width:2px; height:22px; background:var(--rule); margin-left:33px;
+  }
+
+  .pill{
+    display:inline-block; font-size:12px; font-weight:700; padding:3px 10px;
+    border-radius:999px; background:var(--paper-2); color:var(--ink-soft); margin-right:6px;
+  }
+
+  footer{
+    grid-column:1/-1; text-align:center; padding:34px 20px 50px;
+    color:var(--ink-soft); font-size:13.5px; border-top:1px solid var(--rule);
+  }
+
+  ::selection{background:rgba(226,166,59,0.35);}
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <strong>🐍 Python Foundations</strong>
+  <button id="navToggle" onclick="document.getElementById('sidebar').classList.toggle('open')">Menu</button>
+</div>
+
+<div class="shell">
+
+  <!-- ================= SIDEBAR ================= -->
+  <nav id="sidebar">
+    <div class="brand"><span class="mark"></span> Python Foundations</div>
+
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel">0% through the lesson</div>
+    </div>
+
+    <div class="navgroup">
+      <div class="navgroup-head"><span class="sw" style="background:var(--cond)"></span>1 · Conditions</div>
+      <ul>
+        <li><a href="#what-is-conditional">What is a conditional?</a></li>
+        <li><a href="#if-syntax">Basic if syntax</a></li>
+        <li><a href="#comparison-ops">Comparison operators</a></li>
+        <li><a href="#adult-minor">Example: adult or minor</a></li>
+        <li><a href="#elif">Multiple conditions (elif)</a></li>
+      </ul>
+    </div>
+
+    <div class="navgroup">
+      <div class="navgroup-head"><span class="sw" style="background:var(--func)"></span>2 · Functions</div>
+      <ul>
+        <li><a href="#into-function">Turning logic into a function</a></li>
+        <li><a href="#return-vs-print">return vs print</a></li>
+        <li><a href="#docstrings">Documenting functions</a></li>
+      </ul>
+    </div>
+
+    <div class="navgroup">
+      <div class="navgroup-head"><span class="sw" style="background:var(--loop)"></span>3 · Loops</div>
+      <ul>
+        <li><a href="#for-loops">for loops</a></li>
+        <li><a href="#loop-numbers">Looping through numbers</a></li>
+        <li><a href="#zip">Combining loops + functions (zip)</a></li>
+        <li><a href="#while-loops">while loops</a></li>
+        <li><a href="#infinite-loops">Infinite loops</a></li>
+        <li><a href="#while-students">while with student data</a></li>
+      </ul>
+    </div>
+
+    <div class="navgroup">
+      <div class="navgroup-head"><span class="sw" style="background:var(--mod)"></span>4 · Modules</div>
+      <ul>
+        <li><a href="#modules-intro">What is a module?</a></li>
+        <li><a href="#module-vs-package">Module vs package</a></li>
+        <li><a href="#colab-module">Creating a module in Colab</a></li>
+      </ul>
+    </div>
+
+    <div class="navgroup">
+      <div class="navgroup-head">Wrap-up</div>
+      <ul>
+        <li><a href="#full-demo">Full classroom demo</a></li>
+        <li><a href="#exercises">Exercises</a></li>
+        <li><a href="#key-concepts">Key concepts checklist</a></li>
+        <li><a href="#mental-model">The mental model</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ================= HERO ================= -->
+  <div class="hero">
+    <div class="eyebrow"><span class="dot"></span> BEGINNER PYTHON LESSON</div>
+    <h1>Conditions, Functions, Loops &amp; Modules</h1>
+    <p class="sub">Everything from this lesson, in one place — explanations, runnable code, expected output, and practice exercises. Work through it top to bottom, or jump straight to what you need from the menu.</p>
+    <div class="flow-preview">
+      <div class="flow-step"><span class="sw" style="background:var(--cond)"></span>Condition</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="sw" style="background:var(--func)"></span>Function</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="sw" style="background:var(--loop)"></span>Loop</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="sw" style="background:var(--mod)"></span>Module</div>
+    </div>
+  </div>
+
+  <!-- ================= MAIN ================= -->
+  <main>
+
+    <!-- ============ PART 1: WHAT IS A CONDITIONAL ============ -->
+    <section class="topic" id="what-is-conditional">
+      <span class="stage-tag stage-cond"><span class="sw" style="background:var(--cond)"></span>Conditions</span>
+      <h2 class="topic-title">1. What is a conditional statement?</h2>
+      <p>A conditional statement allows a program to make a decision. In everyday life, we make decisions such as: <em>"If it is raining, carry an umbrella."</em> In Python, that same decision looks like this:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>if it_is_raining:
+    carry_umbrella()</code></pre></div>
+      <p>The basic idea is always the same shape:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>IF something is TRUE
+    DO something
+ELSE
+    DO something else</code></pre></div>
+      <p>A condition normally produces one of two results: <code class="inline">True</code> or <code class="inline">False</code>. For example:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>age = 20
+
+age >= 18</code></pre></div>
+      <div class="out-block"><div class="out-label">Result</div><pre>True</pre></div>
+    </section>
+
+    <!-- ============ PART 2: BASIC IF SYNTAX ============ -->
+    <section class="topic" id="if-syntax">
+      <span class="stage-tag stage-cond"><span class="sw" style="background:var(--cond)"></span>Conditions</span>
+      <h2 class="topic-title">2. Basic if syntax</h2>
+      <p>The general structure is:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>if condition:
+    statement
+    statement
+    statement</code></pre></div>
+      <p>For example:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>age = 20
+
+if age >= 18:
+    print("Customer is an adult")</code></pre></div>
+      <div class="callout tip">
+        <span class="callout-label">Teaching point</span>
+        <p>Notice the colon at the end of <code class="inline">if age >= 18:</code>, and notice the indentation on <code class="inline">print("Customer is an adult")</code>. The indented code belongs to the <code class="inline">if</code> statement — Python uses indentation, not brackets, to know what's "inside" a block.</p>
+      </div>
+    </section>
+
+    <!-- ============ PART 3: COMPARISON OPERATORS ============ -->
+    <section class="topic" id="comparison-ops">
+      <span class="stage-tag stage-cond"><span class="sw" style="background:var(--cond)"></span>Conditions</span>
+      <h2 class="topic-title">3. Comparison operators</h2>
+      <p>Python provides comparison operators for comparing values:</p>
+      <table>
+        <thead><tr><th>Operator</th><th>Meaning</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><code class="inline">==</code></td><td>Equal to</td><td><code class="inline">age == 18</code></td></tr>
+          <tr><td><code class="inline">!=</code></td><td>Not equal to</td><td><code class="inline">age != 18</code></td></tr>
+          <tr><td><code class="inline">&gt;</code></td><td>Greater than</td><td><code class="inline">age &gt; 18</code></td></tr>
+          <tr><td><code class="inline">&lt;</code></td><td>Less than</td><td><code class="inline">age &lt; 18</code></td></tr>
+          <tr><td><code class="inline">&gt;=</code></td><td>Greater than or equal</td><td><code class="inline">age &gt;= 18</code></td></tr>
+          <tr><td><code class="inline">&lt;=</code></td><td>Less than or equal</td><td><code class="inline">age &lt;= 18</code></td></tr>
+          <tr><td><code class="inline">in</code></td><td>Exists inside</td><td><code class="inline">"John" in students</code></td></tr>
+          <tr><td><code class="inline">not in</code></td><td>Does not exist inside</td><td><code class="inline">"John" not in students</code></td></tr>
+        </tbody>
+      </table>
+      <div class="callout warn">
+        <span class="callout-label">Important distinction</span>
+        <p>Students often confuse <code class="inline">=</code> with <code class="inline">==</code>. <code class="inline">age = 20</code> is <strong>assignment</strong> — it stores a value. <code class="inline">age == 20</code> is <strong>comparison</strong> — it asks a true/false question.</p>
+      </div>
+    </section>
+
+    <!-- ============ PART 4: ADULT OR MINOR ============ -->
+    <section class="topic" id="adult-minor">
+      <span class="stage-tag stage-cond"><span class="sw" style="background:var(--cond)"></span>Conditions</span>
+      <h2 class="topic-title">4. Practical example: adult or minor</h2>
+      <p>Let's determine whether a customer is an adult or a minor:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>customerAge = 20
+adultAge = 18
+
+if customerAge >= adultAge:
+    print("Customer is an adult")
+else:
+    print("This customer is a minor")</code></pre></div>
+      <div class="out-block"><div class="out-label">Output</div><pre>Customer is an adult</pre></div>
+
+      <h3>Calculating the age difference</h3>
+      <p>We can make the program more informative:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>customerAge = 20
+adultAge = 18
+
+if customerAge >= adultAge:
+    ageOverMin = customerAge - adultAge
+    print("Customer is an adult")
+    print(f"The customer is {ageOverMin} years over the minimum age.")
+else:
+    ageUnderMin = adultAge - customerAge
+    print("This customer is a minor")
+    print(f"The customer is {ageUnderMin} years under the minimum age.")</code></pre></div>
+      <div class="out-block"><div class="out-label">Output — for a 20-year-old</div><pre>Customer is an adult
+The customer is 2 years over the minimum age.</pre></div>
+      <div class="out-block"><div class="out-label">Output — for a 15-year-old</div><pre>This customer is a minor
+The customer is 3 years under the minimum age.</pre></div>
+    </section>
+
+    <!-- ============ PART 5: ELIF ============ -->
+    <section class="topic" id="elif">
+      <span class="stage-tag stage-cond"><span class="sw" style="background:var(--cond)"></span>Conditions</span>
+      <h2 class="topic-title">5. Multiple conditions with elif</h2>
+      <p>Sometimes we have more than two possibilities. For example, suppose we want to determine a student's educational level based on age:</p>
+      <table>
+        <thead><tr><th>Age</th><th>Category</th></tr></thead>
+        <tbody>
+          <tr><td>Below 2</td><td>Daycare</td></tr>
+          <tr><td>2–4</td><td>Kindergarten</td></tr>
+          <tr><td>5–9</td><td>Elementary School</td></tr>
+          <tr><td>10–15</td><td>High School</td></tr>
+          <tr><td>16+</td><td>College</td></tr>
+        </tbody>
+      </table>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>candidateAge = 13
+
+if candidateAge >= 16:
+    print("Candidate belongs to College")
+elif candidateAge >= 10:
+    print("Candidate belongs to High School")
+elif candidateAge >= 5:
+    print("Candidate belongs to Elementary School")
+elif candidateAge >= 2:
+    print("Candidate belongs to Kindergarten")
+else:
+    print("Candidate belongs to Daycare")</code></pre></div>
+      <div class="out-block"><div class="out-label">Output</div><pre>Candidate belongs to High School</pre></div>
+      <div class="callout">
+        <span class="callout-label">Why check from the highest age first?</span>
+        <p>Python evaluates conditions from top to bottom. If <code class="inline">candidateAge >= 16</code> is checked first and the student is 20, Python executes that block and <strong>stops</strong> checking the remaining <code class="inline">elif</code> statements.</p>
+      </div>
+    </section>
+
+    <!-- ============ PART 6: FUNCTION ============ -->
+    <section class="topic" id="into-function">
+      <span class="stage-tag stage-func"><span class="sw" style="background:var(--func)"></span>Functions</span>
+      <h2 class="topic-title">6. Converting the logic into a function</h2>
+      <p>We may want to use this calculation many times. Instead of repeatedly writing the same <code class="inline">if</code> chain, we can wrap it in a function:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>def schoolCat(name, age):
+
+    if age >= 16:
+        print(f"{name} belongs to College")
+
+    elif age >= 10:
+        print(f"{name} belongs to High School")
+
+    elif age >= 5:
+        print(f"{name} belongs to Elementary School")
+
+    elif age >= 2:
+        print(f"{name} belongs to Kindergarten")
+
+    else:
+        print(f"{name} belongs to Daycare")</code></pre></div>
+      <p>Now we can call the function as many times as we like:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>schoolCat("Jigiri", 1)</code></pre></div>
+      <div class="out-block"><div class="out-label">Output</div><pre>Jigiri belongs to Daycare</pre></div>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>schoolCat("Mary", 17)</code></pre></div>
+      <div class="out-block"><div class="out-label">Output</div><pre>Mary belongs to College</pre></div>
+      <div class="callout tip">
+        <span class="callout-label">Teaching point</span>
+        <p>A function allows us to write code once and reuse it many times.</p>
+      </div>
+    </section>
+
+    <!-- ============ FOR LOOPS ============ -->
+    <section class="topic" id="for-loops">
+      <span class="stage-tag stage-loop"><span class="sw" style="background:var(--loop)"></span>Loops</span>
+      <h2 class="topic-title">7. for loops</h2>
+      <p>Imagine we have five students:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>studList = ["Frank", "Claret", "Iniobong", "Silas", "Joseph"]</code></pre></div>
+      <p>If we want to print every name, we could write five separate <code class="inline">print()</code> calls — but that becomes impractical once we have 1,000 students. A <strong>for loop</strong> solves this:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>for name in studList:
+    print(name)</code></pre></div>
+      <div class="out-block"><div class="out-label">Output</div><pre>Frank
+Claret
+Iniobong
+Silas
+Joseph</pre></div>
+
+      <h3>How a for loop works</h3>
+      <p>The general syntax is:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>for item in container:
+    do_something()</code></pre></div>
+      <p>Python takes one item at a time — <code class="inline">name</code> is a temporary variable that holds whichever item is currently being processed: Frank → Claret → Iniobong → Silas → Joseph.</p>
+    </section>
+
+    <!-- ============ LOOPING THROUGH NUMBERS ============ -->
+    <section class="topic" id="loop-numbers">
+      <span class="stage-tag stage-loop"><span class="sw" style="background:var(--loop)"></span>Loops</span>
+      <h2 class="topic-title">8. Looping through numbers</h2>
+      <p>We can also loop through a list of ages:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>studAgeList = [2, 5, 8, 15, 23]
+
+for age in studAgeList:
+    print(age)</code></pre></div>
+      <div class="out-block"><div class="out-label">Output</div><pre>2
+5
+8
+15
+23</pre></div>
+    </section>
+
+    <!-- ============ ZIP ============ -->
+    <section class="topic" id="zip">
+      <span class="stage-tag stage-loop"><span class="sw" style="background:var(--loop)"></span>Loops</span>
+      <h2 class="topic-title">9. Combining functions and loops with zip()</h2>
+      <p>Now we have two related lists:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>studList = ["Frank", "Claret", "Iniobong", "Silas", "Joseph"]
+studAgeList = [2, 5, 8, 15, 23]</code></pre></div>
+      <p>We want to process each student's name together with their age. <code class="inline">zip()</code> combines corresponding items from two lists:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>for student, studentAge in zip(studList, studAgeList):
+    schoolCat(student, studentAge)</code></pre></div>
+      <div class="out-block"><div class="out-label">Output</div><pre>Frank belongs to Daycare
+Claret belongs to Kindergarten
+Iniobong belongs to Elementary School
+Silas belongs to High School
+Joseph belongs to College</pre></div>
+      <div class="callout">
+        <span class="callout-label">What does zip() do?</span>
+        <p>It pairs up items by position: Frank→2, Claret→5, Iniobong→8, Silas→15, Joseph→23. <code class="inline">zip(studList, studAgeList)</code> lets us walk through two lists together, in lockstep.</p>
+      </div>
+    </section>
+
+    <!-- ============ WHILE LOOPS ============ -->
+    <section class="topic" id="while-loops">
+      <span class="stage-tag stage-loop"><span class="sw" style="background:var(--loop)"></span>Loops</span>
+      <h2 class="topic-title">10. while loops</h2>
+      <p>A <code class="inline">while</code> loop repeats code while a condition remains true. Basic syntax:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>while condition:
+    statement</code></pre></div>
+      <p>Example:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>counter = 0
+
+while counter < 5:
+    print(counter)
+    counter += 1</code></pre></div>
+      <div class="out-block"><div class="out-label">Output</div><pre>0
+1
+2
+3
+4</pre></div>
+
+      <h3>Understanding counter += 1</h3>
+      <p><code class="inline">counter += 1</code> is shorthand for <code class="inline">counter = counter + 1</code>. So the value walks: 0 → 1 → 2 → 3 → 4, and eventually <code class="inline">counter &lt; 5</code> becomes false and the loop stops.</p>
+    </section>
+
+    <!-- ============ INFINITE LOOPS ============ -->
+    <section class="topic" id="infinite-loops">
+      <span class="stage-tag stage-loop"><span class="sw" style="background:var(--loop)"></span>Loops</span>
+      <h2 class="topic-title">11. Infinite loops</h2>
+      <p>This is a very important concept for beginners. Consider:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>counter = 0
+
+while counter < 5:
+    print(counter)</code></pre></div>
+      <p>What is missing? We never increase <code class="inline">counter</code>. So <code class="inline">counter</code> stays 0 forever, the condition <code class="inline">counter &lt; 5</code> is always <code class="inline">True</code>, and this creates an <strong>infinite loop</strong>.</p>
+      <p>The correct version restores the increment:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>counter = 0
+
+while counter < 5:
+    print(counter)
+    counter += 1</code></pre></div>
+      <div class="callout warn">
+        <span class="callout-label">Teacher warning</span>
+        <p>Every <code class="inline">while</code> loop should have a clear mechanism that eventually makes its condition false — unless an intentional infinite loop is being created on purpose.</p>
+      </div>
+    </section>
+
+    <!-- ============ WHILE WITH STUDENTS ============ -->
+    <section class="topic" id="while-students">
+      <span class="stage-tag stage-loop"><span class="sw" style="background:var(--loop)"></span>Loops</span>
+      <h2 class="topic-title">12. Using while with our student example</h2>
+      <p>We can process our students using a <code class="inline">while</code> loop instead of a <code class="inline">for</code> loop:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>studList = ["Frank", "Claret", "Iniobong", "Silas", "Joseph"]
+studAgeList = [2, 5, 8, 15, 23]
+
+stdListLen = len(studList)
+counter = 0
+
+while counter < stdListLen:
+
+    schoolCat(
+        studList[counter],
+        studAgeList[counter]
+    )
+
+    counter += 1</code></pre></div>
+      <p>The important part is <code class="inline">studList[counter]</code> and <code class="inline">studAgeList[counter]</code>. When <code class="inline">counter = 0</code>, Python fetches <code class="inline">studList[0]</code> and <code class="inline">studAgeList[0]</code> — which gives <em>Frank, 2</em>. Then <code class="inline">counter += 1</code> moves on to the next student.</p>
+    </section>
+
+    <!-- ============ RETURN VS PRINT ============ -->
+    <section class="topic" id="return-vs-print">
+      <span class="stage-tag stage-func"><span class="sw" style="background:var(--func)"></span>Functions</span>
+      <h2 class="topic-title">13. Returning results from functions</h2>
+      <p>So far our function only uses <code class="inline">print()</code>. But functions can also <strong>return</strong> information:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>def schoolEval(name, age):
+
+    if age >= 16:
+        return [name, "College"]
+
+    elif age >= 10:
+        return [name, "High School"]
+
+    elif age >= 5:
+        return [name, "Elementary School"]
+
+    elif age >= 2:
+        return [name, "Kindergarten"]
+
+    else:
+        return [name, "Daycare"]</code></pre></div>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>result = schoolEval("Vincent", 13)
+print(result)</code></pre></div>
+      <div class="out-block"><div class="out-label">Output</div><pre>['Vincent', 'High School']</pre></div>
+      <p>We can also <strong>unpack</strong> the result into two separate variables:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>stdName, school = schoolEval("Vincent", 13)
+
+print(stdName)
+print(school)</code></pre></div>
+      <div class="out-block"><div class="out-label">Output</div><pre>Vincent
+High School</pre></div>
+
+      <h3>print() versus return</h3>
+      <table>
+        <thead><tr><th>Function</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><code class="inline">print()</code></td><td>Displays something on the screen — nothing is handed back to the code.</td></tr>
+          <tr><td><code class="inline">return</code></td><td>Sends a value back to the code that called the function, so it can be stored or reused.</td></tr>
+        </tbody>
+      </table>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>def add(a, b):
+    return a + b
+
+answer = add(10, 20)
+print(answer)</code></pre></div>
+      <div class="out-block"><div class="out-label">Output</div><pre>30</pre></div>
+      <div class="callout tip">
+        <span class="callout-label">Key idea</span>
+        <p><code class="inline">print()</code> displays a result. <code class="inline">return</code> gives a result back to the program so it can be used again.</p>
+      </div>
+    </section>
+
+    <!-- ============ DOCSTRINGS ============ -->
+    <section class="topic" id="docstrings">
+      <span class="stage-tag stage-func"><span class="sw" style="background:var(--func)"></span>Functions</span>
+      <h2 class="topic-title">14. Documenting functions</h2>
+      <p>Professional Python programmers document their functions using a <strong>docstring</strong> — a triple-quoted string right under the <code class="inline">def</code> line:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>def schoolEval(name, age):
+    """
+    Determine the educational level of a student.
+
+    Parameters
+    ----------
+    name : str
+        Name of the student.
+
+    age : int
+        Age of the student.
+
+    Returns
+    -------
+    list
+        A list containing the student's name and
+        educational level.
+    """
+
+    if age >= 16:
+        return [name, "College"]
+
+    elif age >= 10:
+        return [name, "High School"]
+
+    elif age >= 5:
+        return [name, "Elementary School"]
+
+    elif age >= 2:
+        return [name, "Kindergarten"]
+
+    else:
+        return [name, "Daycare"]</code></pre></div>
+      <p>We can ask Python for this documentation directly:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>help(schoolEval)</code></pre></div>
+      <p>We can also inspect the attributes available on the function:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>dir(schoolEval)</code></pre></div>
+    </section>
+
+    <!-- ============ MODULES INTRO ============ -->
+    <section class="topic" id="modules-intro">
+      <span class="stage-tag stage-mod"><span class="sw" style="background:var(--mod)"></span>Modules</span>
+      <h2 class="topic-title">15. Python modules</h2>
+      <p>A <strong>module</strong> is a Python file containing reusable Python code. For example, we can create a file called <code class="inline">demoscript.py</code>:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>def schoolEval(name, age):
+    """
+    Determine the educational level of a student.
+    """
+
+    if age >= 16:
+        return [name, "College"]
+
+    elif age >= 10:
+        return [name, "High School"]
+
+    elif age >= 5:
+        return [name, "Elementary School"]
+
+    elif age >= 2:
+        return [name, "Kindergarten"]
+
+    else:
+        return [name, "Daycare"]</code></pre></div>
+      <p>We can then import it into another Python program:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>import demoscript</code></pre></div>
+      <p>Or give it a shorter name:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>import demoscript as ds
+
+result = ds.schoolEval("Vincent", 13)
+print(result)</code></pre></div>
+      <div class="out-block"><div class="out-label">Output</div><pre>['Vincent', 'High School']</pre></div>
+    </section>
+
+    <!-- ============ MODULE VS PACKAGE ============ -->
+    <section class="topic" id="module-vs-package">
+      <span class="stage-tag stage-mod"><span class="sw" style="background:var(--mod)"></span>Modules</span>
+      <h2 class="topic-title">16. Module vs. package</h2>
+      <p>For beginners, explain it this way:</p>
+      <table>
+        <thead><tr><th>Term</th><th>What it is</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Module</strong></td><td>Usually a single Python file.</td><td><code class="inline">demoscript.py</code></td></tr>
+          <tr><td><strong>Package</strong></td><td>A structured collection of modules, usually organized in a directory.</td><td>
+            <code class="inline">school_system/</code>
+          </td></tr>
+        </tbody>
+      </table>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>school_system/
+    __init__.py
+    students.py
+    teachers.py
+    reports.py</code></pre></div>
+      <div class="callout warn">
+        <span class="callout-label">Common misconception to avoid</span>
+        <p>Don't tell students <em>"a module becomes a package when distributed globally."</em> That's not technically correct. A package is an organizational structure containing modules — distribution is a completely separate concept.</p>
+      </div>
+    </section>
+
+    <!-- ============ COLAB MODULE ============ -->
+    <section class="topic" id="colab-module">
+      <span class="stage-tag stage-mod"><span class="sw" style="background:var(--mod)"></span>Modules</span>
+      <h2 class="topic-title">17. Creating the module in Google Colab</h2>
+      <p>Since you are using Google Colab, the easiest way to create the module file is with the <code class="inline">%%writefile</code> magic command:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>%%writefile demoscript.py
+
+def schoolEval(name, age):
+    """
+    Determine the educational level of a student.
+
+    Parameters
+    ----------
+    name : str
+        Student name.
+
+    age : int
+        Student age.
+
+    Returns
+    -------
+    list
+        Student name and educational level.
+    """
+
+    if age >= 16:
+        return [name, "College"]
+
+    elif age >= 10:
+        return [name, "High School"]
+
+    elif age >= 5:
+        return [name, "Elementary School"]
+
+    elif age >= 2:
+        return [name, "Kindergarten"]
+
+    else:
+        return [name, "Daycare"]</code></pre></div>
+      <p>Colab should report that it wrote <code class="inline">demoscript.py</code>. Then:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>import demoscript as ds
+
+result = ds.schoolEval("Vincent", 13)
+print(result)</code></pre></div>
+      <div class="out-block"><div class="out-label">Output</div><pre>['Vincent', 'High School']</pre></div>
+      <div class="callout warn">
+        <span class="callout-label">Very important</span>
+        <p>The file extension must be <code class="inline">.py</code>, not <code class="inline">.pyl</code>. And if the file is <code class="inline">demoscript.py</code>, the import must be <code class="inline">import demoscript</code> — not <code class="inline">import demoScript</code>. Python module names are <strong>case-sensitive</strong>.</p>
+      </div>
+    </section>
+
+    <!-- ============ FULL DEMO ============ -->
+    <section class="topic" id="full-demo">
+      <span class="stage-tag" style="background:var(--paper-2); color:var(--ink-soft);">Wrap-up</span>
+      <h2 class="topic-title">18. Complete classroom demonstration</h2>
+      <p>Here is one clean script that strings together every concept from this lesson, from top to bottom:</p>
+      <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code># ============================================
+# PYTHON BEGINNER LESSON
+# CONDITIONS, FUNCTIONS, LOOPS AND MODULES
+# ============================================
+
+
+# --------------------------------------------
+# 1. CONDITIONAL STATEMENT
+# --------------------------------------------
+
+customerAge = 20
+adultAge = 18
+
+if customerAge >= adultAge:
+    print("Customer is an adult")
+else:
+    print("Customer is a minor")
+
+
+# --------------------------------------------
+# 2. MULTIPLE CONDITIONS
+# --------------------------------------------
+
+candidateAge = 13
+
+if candidateAge >= 16:
+    print("Candidate belongs to College")
+
+elif candidateAge >= 10:
+    print("Candidate belongs to High School")
+
+elif candidateAge >= 5:
+    print("Candidate belongs to Elementary School")
+
+elif candidateAge >= 2:
+    print("Candidate belongs to Kindergarten")
+
+else:
+    print("Candidate belongs to Daycare")
+
+
+# --------------------------------------------
+# 3. FUNCTION
+# --------------------------------------------
+
+def schoolCat(name, age):
+
+    if age >= 16:
+        print(f"{name} belongs to College")
+
+    elif age >= 10:
+        print(f"{name} belongs to High School")
+
+    elif age >= 5:
+        print(f"{name} belongs to Elementary School")
+
+    elif age >= 2:
+        print(f"{name} belongs to Kindergarten")
+
+    else:
+        print(f"{name} belongs to Daycare")
+
+
+schoolCat("Jigiri", 1)
+
+
+# --------------------------------------------
+# 4. STUDENT LISTS
+# --------------------------------------------
+
+studList = [
+    "Frank",
+    "Claret",
+    "Iniobong",
+    "Silas",
+    "Joseph"
+]
+
+studAgeList = [2, 5, 8, 15, 23]
+
+
+# --------------------------------------------
+# 5. FOR LOOP
+# --------------------------------------------
+
+for name in studList:
+    print(name)
+
+
+# --------------------------------------------
+# 6. LOOP THROUGH AGES
+# --------------------------------------------
+
+for age in studAgeList:
+    print(age)
+
+
+# --------------------------------------------
+# 7. ZIP + FOR LOOP + FUNCTION
+# --------------------------------------------
+
+for student, studentAge in zip(studList, studAgeList):
+
+    schoolCat(student, studentAge)
+
+
+# --------------------------------------------
+# 8. WHILE LOOP
+# --------------------------------------------
+
+counter = 0
+stdListLen = len(studList)
+
+while counter < stdListLen:
+
+    schoolCat(
+        studList[counter],
+        studAgeList[counter]
+    )
+
+    counter += 1
+
+
+# --------------------------------------------
+# 9. FUNCTION THAT RETURNS A VALUE
+# --------------------------------------------
+
+def schoolEval(name, age):
+
+    """
+    Determine the educational level of a student.
+
+    Parameters
+    ----------
+    name : str
+        Student name.
+
+    age : int
+        Student age.
+
+    Returns
+    -------
+    list
+        Student name and educational level.
+    """
+
+    if age >= 16:
+        return [name, "College"]
+
+    elif age >= 10:
+        return [name, "High School"]
+
+    elif age >= 5:
+        return [name, "Elementary School"]
+
+    elif age >= 2:
+        return [name, "Kindergarten"]
+
+    else:
+        return [name, "Daycare"]
+
+
+# --------------------------------------------
+# 10. USE RETURNED VALUES
+# --------------------------------------------
+
+stdName, school = schoolEval("Vincent", 13)
+
+print(stdName)
+print(school)
+
+
+# --------------------------------------------
+# 11. HELP
+# --------------------------------------------
+
+help(schoolEval)
+
+
+# --------------------------------------------
+# 12. DIRECTORY
+# --------------------------------------------
+
+print(dir(schoolEval))</code></pre></div>
+    </section>
+
+    <!-- ============ EXERCISES ============ -->
+    <section class="topic" id="exercises">
+      <span class="stage-tag" style="background:var(--paper-2); color:var(--ink-soft);">Wrap-up</span>
+      <h2 class="topic-title">Classroom exercises</h2>
+      <p class="lede">Try to solve each one yourself before revealing the details. Click a card to expand it.</p>
+
+      <details class="exercise">
+        <summary><span><span class="ex-num">1</span>Driving eligibility</span><span class="chev">▾</span></summary>
+        <div class="ex-body">
+          <p>Write a function called <code class="inline">drivingStatus()</code> that accepts a <code class="inline">name</code> and an <code class="inline">age</code>.</p>
+          <table>
+            <thead><tr><th>Age</th><th>Result</th></tr></thead>
+            <tbody>
+              <tr><td>18 or above</td><td>Eligible to drive</td></tr>
+              <tr><td>Below 18</td><td>Not eligible to drive</td></tr>
+            </tbody>
+          </table>
+          <p>For example:</p>
+          <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>drivingStatus("John", 20)</code></pre></div>
+          <div class="out-block"><div class="out-label">Expected output</div><pre>John is eligible to drive</pre></div>
+        </div>
+      </details>
+
+      <details class="exercise">
+        <summary><span><span class="ex-num">2</span>Student classification</span><span class="chev">▾</span></summary>
+        <div class="ex-body">
+          <p>Create <code class="inline">schoolCat(name, age)</code> using these rules, then test it with at least five students:</p>
+          <table>
+            <thead><tr><th>Age</th><th>Category</th></tr></thead>
+            <tbody>
+              <tr><td>0–1</td><td>Daycare</td></tr>
+              <tr><td>2–4</td><td>Kindergarten</td></tr>
+              <tr><td>5–9</td><td>Elementary School</td></tr>
+              <tr><td>10–15</td><td>High School</td></tr>
+              <tr><td>16+</td><td>College</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <details class="exercise">
+        <summary><span><span class="ex-num">3</span>Use a for loop</span><span class="chev">▾</span></summary>
+        <div class="ex-body">
+          <p>Given:</p>
+          <div class="code-block"><div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>students = ["John", "Mary", "Peter", "Amina", "David"]
+ages = [17, 8, 21, 4, 12]</code></pre></div>
+          <p>Use <code class="inline">for</code> and <code class="inline">zip()</code> to classify every student with the function from Exercise 2.</p>
+        </div>
+      </details>
+
+      <details class="exercise">
+        <summary><span><span class="ex-num">4</span>Use a while loop</span><span class="chev">▾</span></summary>
+        <div class="ex-body">
+          <p>Solve Exercise 3 again — but this time using a <code class="inline">while</code> loop instead of a <code class="inline">for</code> loop. Be ready to explain out loud why <code class="inline">counter += 1</code> is necessary here.</p>
+        </div>
+      </details>
+    </section>
+
+    <!-- ============ KEY CONCEPTS ============ -->
+    <section class="topic" id="key-concepts">
+      <span class="stage-tag" style="background:var(--paper-2); color:var(--ink-soft);">Wrap-up</span>
+      <h2 class="topic-title">Key concepts you should leave with</h2>
+      <p class="lede">Try to explain each of these out loud, without looking back at your notes. Tick off the ones you're confident on.</p>
+      <div id="checklistProgress">0 / 15 concepts checked off</div>
+      <div class="checklist" id="checklist">
+        <!-- populated by JS -->
+      </div>
+    </section>
+
+    <!-- ============ MENTAL MODEL ============ -->
+    <section class="topic" id="mental-model" style="margin-bottom:20px;">
+      <span class="stage-tag" style="background:var(--paper-2); color:var(--ink-soft);">Wrap-up</span>
+      <h2 class="topic-title">The mental model to remember</h2>
+      <p>Everything in this lesson fits one pipeline. Keep this picture in your head whenever you sit down to write Python:</p>
+      <div class="model">
+        <div class="model-node">
+          <div class="num" style="background:var(--cond)">1</div>
+          <div class="txt"><strong>CONDITION</strong><span>Make a decision</span></div>
+        </div>
+        <div class="model-connector"></div>
+        <div class="model-node">
+          <div class="num" style="background:var(--func)">2</div>
+          <div class="txt"><strong>FUNCTION</strong><span>Package reusable logic</span></div>
+        </div>
+        <div class="model-connector"></div>
+        <div class="model-node">
+          <div class="num" style="background:var(--loop)">3</div>
+          <div class="txt"><strong>LOOP</strong><span>Repeat the logic</span></div>
+        </div>
+        <div class="model-connector"></div>
+        <div class="model-node">
+          <div class="num" style="background:var(--mod)">4</div>
+          <div class="txt"><strong>MODULE</strong><span>Reuse the logic in another program</span></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= RIGHT RAIL ================= -->
+  <aside id="rail">
+    <div class="rail-card">
+      <div class="rail-title">Lesson at a glance</div>
+      <div class="rail-stats">
+        <div class="rail-stat"><span>Topics</span><b>18</b></div>
+        <div class="rail-stat"><span>Exercises</span><b>4</b></div>
+        <div class="rail-stat"><span>Concepts to master</span><b>15</b></div>
+        <div class="rail-stat"><span>Reading time</span><b>~25 min</b></div>
+      </div>
+    </div>
+
+    <div class="rail-card">
+      <div class="rail-title">Stage legend</div>
+      <div class="rail-legend">
+        <div class="rail-legend-item"><span class="sw" style="background:var(--cond)"></span>Conditions — make a decision</div>
+        <div class="rail-legend-item"><span class="sw" style="background:var(--func)"></span>Functions — package logic</div>
+        <div class="rail-legend-item"><span class="sw" style="background:var(--loop)"></span>Loops — repeat logic</div>
+        <div class="rail-legend-item"><span class="sw" style="background:var(--mod)"></span>Modules — reuse logic</div>
+      </div>
+    </div>
+
+    <div class="rail-card">
+      <div class="rail-title">Jump to</div>
+      <div class="rail-jump">
+        <a href="#full-demo">Full demo <span class="arrow">→</span></a>
+        <a href="#exercises">Exercises <span class="arrow">→</span></a>
+        <a href="#key-concepts">Checklist <span class="arrow">→</span></a>
+        <a href="#mental-model">Mental model <span class="arrow">→</span></a>
+      </div>
+    </div>
+
+    <button id="backToTop" onclick="window.scrollTo({top:0, behavior:'smooth'})">↑ Back to top</button>
+  </aside>
+
+</div>
+
+<footer>Python Foundations — built for new learners. Work through it once, then keep it as a reference.</footer>
+
+<script>
+  // Copy-to-clipboard for code blocks
+  function copyCode(btn){
+    const codeEl = btn.closest('.code-block').querySelector('code');
+    const text = codeEl.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      const original = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = original, 1200);
+    }).catch(() => {
+      btn.textContent = 'Select & copy';
+      setTimeout(() => btn.textContent = 'Copy', 1200);
+    });
+  }
+
+  // Active-link highlighting + progress bar via IntersectionObserver
+  const sections = Array.from(document.querySelectorAll('section.topic'));
+  const links = Array.from(document.querySelectorAll('#sidebar a'));
+  const linkMap = {};
+  links.forEach(l => linkMap[l.getAttribute('href').slice(1)] = l);
+
+  const progressFill = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+
+  function setActive(id){
+    links.forEach(l => l.classList.remove('active'));
+    if(linkMap[id]) linkMap[id].classList.add('active');
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        setActive(entry.target.id);
+        const idx = sections.indexOf(entry.target);
+        const pct = Math.round(((idx+1) / sections.length) * 100);
+        progressFill.style.width = pct + '%';
+        progressLabel.textContent = pct + '% through the lesson';
+      }
+    });
+  }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
+
+  sections.forEach(s => observer.observe(s));
+
+  // Close mobile nav on link click
+  links.forEach(l => l.addEventListener('click', () => {
+    document.getElementById('sidebar').classList.remove('open');
+  }));
+
+  // Key-concepts checklist
+  const concepts = [
+    "What is a condition?",
+    "What does if do?",
+    "What is elif?",
+    "What is else?",
+    "What is the difference between = and ==?",
+    "What is indentation?",
+    "What is a function?",
+    "What is a parameter?",
+    "What is return?",
+    "What is a for loop?",
+    "What is a while loop?",
+    "What does zip() do?",
+    "What causes an infinite loop?",
+    "What is a Python module?",
+    "What is a docstring?"
+  ];
+
+  const checklistEl = document.getElementById('checklist');
+  const progressText = document.getElementById('checklistProgress');
+
+  concepts.forEach((text, i) => {
+    const id = 'chk-' + i;
+    const item = document.createElement('label');
+    item.className = 'check-item';
+    item.setAttribute('for', id);
+    item.innerHTML = `<input type="checkbox" id="${id}"><span class="qtext">${text}</span>`;
+    checklistEl.appendChild(item);
+  });
+
+  checklistEl.addEventListener('change', () => {
+    const boxes = checklistEl.querySelectorAll('input[type=checkbox]');
+    let checked = 0;
+    boxes.forEach(b => {
+      const item = b.closest('.check-item');
+      if(b.checked){ item.classList.add('checked'); checked++; }
+      else { item.classList.remove('checked'); }
+    });
+    progressText.textContent = `${checked} / ${boxes.length} concepts checked off`;
+  });
+</script>
+
+</body>
+</html>
